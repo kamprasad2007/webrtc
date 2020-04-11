@@ -41,7 +41,7 @@ export default {
     created() {
 
         let self = this;
-        this.socket = io('http://localhost:3000');
+        this.socket = io('https://webrtc-application-poc.herokuapp.com');
 
         this.socket.on('offer', function(data){
             var msg = JSON.parse(data);
