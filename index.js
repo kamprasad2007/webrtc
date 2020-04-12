@@ -8,7 +8,6 @@ var socket = require('socket.io');
 const cors = require('cors')
 const bodyParser = require('body-parser');
 
-
 /**
  * App Variables
  */
@@ -49,17 +48,19 @@ http.listen(port, () => {
 * Socket setup & pass server
 */
 var io = socket(http);
-const users = {};
+const users = [];
 io.on('connection', (socket) => {
 
     console.log('made socket connection', socket.id);
 
     socket.on('login', function(data){
         var msg = JSON.parse(data);
+        users.push(msg.userId);
         console.log('login', msg.userId)
         socket.emit('login', { 
             type: "login", 
-            success: true
+            success: true,
+            initiated: users.length > 1
         });
     });
 
@@ -74,8 +75,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('leave', function(data){
+        
+        var msg = JSON.parse(data);
         console.log('leave', JSON.parse(data).userId)
-        socket.broadcast.emit('leave', data);
+        let index = users.indexOf(msg.userId);
+        users.splice(index, index+1);
+        data.initiated = users.length > 1;
+        socket.emit('leave', data);
     });
 
     socket.on('candidate', function(data){

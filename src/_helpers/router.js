@@ -12,14 +12,13 @@ export const router = new Router({
   routes: [
     { path: '/appointment', component: AppointmentPage },
     { path: '/login', component: LoginPage },
-    { path: '/session', component: SessionPage },
+    { path: '/session/:id', component: SessionPage },
 
-    { path: '*', redirect: '/session' }
+    { path: '*', redirect: '/appointment' }
   ]
 });
 
 router.beforeEach((to, from, next) => {
-  // redirect to login page if not logged in and trying to access a restricted page
   const publicPages = ['/login'];
   const authRequired = !publicPages.includes(to.path);
   const loggedIn = localStorage.getItem('session');

@@ -1,24 +1,60 @@
 <template>
-    <div>
-        <div class="container">
-            <div class="row ">
-                <div class="col-9 video-container">
-                    <video v-bind:class="[{ 'connected' : connected }]" id="local_video" autoplay muted></video>
-                    <video   id="received_video" autoplay muted></video>
-                    <div class="tool">
-                        <button class="div-mic">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%;"><defs><clipPath id="animationMask_hIPS4N9MWR"><rect width="48" height="48" x="0" y="0"></rect></clipPath><mask id="681HUqKWh5"><rect fill="#ffffff" width="48" height="48" x="-24" y="-24"></rect><path fill="#000000" clip-rule="nonzero" d=" M-7.77,-10.111 C-7.77,-10.111 -9.187,-8.694 -9.187,-8.694 C-9.187,-8.694 -9.183,-8.696 -9.183,-8.696 C-9.183,-8.696 -7.766,-10.113 -7.766,-10.113 C-7.766,-10.113 -7.77,-10.111 -7.77,-10.111" fill-opacity="1"></path></mask></defs><g clip-path="url(#animationMask_hIPS4N9MWR)"><g mask="url(#681HUqKWh5)" transform="matrix(1.35,0,0,1.35,24,24)" opacity="1" style="user-select: none;"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><g opacity="0" transform="matrix(1,0,0,1,0,0)"><path class="fill bkbMM" fill="rgb(95,99,104)" fill-opacity="1" d="M0 0 M-9.188,-8.693 C-9.188,-8.693 -10.605,-7.276 -10.605,-7.276 C-10.605,-7.276 -10.605,-7.276 -10.605,-7.276 C-10.605,-7.276 -9.188,-8.693 -9.188,-8.693 C-9.188,-8.693 -9.188,-8.693 -9.188,-8.693z"></path></g><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path class="fill bkbMM" fill="rgb(95,99,104)" fill-opacity="1" d="M0 0 M5,-0.5 C5,2.26 2.76,4.5 0,4.5 C-2.76,4.5 -5,2.26 -5,-0.5 C-5,-0.5 -7,-0.5 -7,-0.5 C-7,3.03 -4.390000000000001,5.93 -1,6.42 C-1,6.42 -1,9.5 -1,9.5 C-1,9.5 1,9.5 1,9.5 C1,9.5 1,6.42 1,6.42 C4.390000000000001,5.93 7,3.03 7,-0.5 C7,-0.5 5,-0.5 5,-0.5zM0 0 M-1,-6.5 C-1,-7.05 -0.55,-7.5 0,-7.5 C0.55,-7.5 1,-7.05 1,-6.5 C1,-6.5 1,-0.5 1,-0.5 C1,0.050000000000000044 0.55,0.5 0,0.5 C-0.55,0.5 -1,0.050000000000000044 -1,-0.5 C-1,-0.5 -1,-6.5 -1,-6.5zM0 0 M0,2.5 C1.66,2.5 3,1.16 3,-0.5 C3,-0.5 3,-6.5 3,-6.5 C3,-8.16 1.66,-9.5 0,-9.5 C-1.66,-9.5 -3,-8.16 -3,-6.5 C-3,-6.5 -3,-0.5 -3,-0.5 C-3,1.16 -1.66,2.5 0,2.5z"></path></g></g></g></g></svg>
-                        </button>
+    <div class="container">
+        <div id="videos" @mouseover="mouseover" @mouseleave="mouseleave" v-bind:class="[{ 'active' : bothconnected }]">
+            <video id="mini-video" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : bothconnected }]"></video>
+            <video id="remote-video" autoplay="" playsinline="" v-bind:class="[{ 'active' : bothconnected }]"></video>
+            <video id="local_video" autoplay muted v-bind:class="[{ 'active' : !bothconnected }]"></video>
+        </div>
 
-                        <button class="div-camera">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%;"><defs><clipPath id="animationMask_tWu5tR2A2f"><rect width="48" height="48" x="0" y="0"></rect></clipPath><mask id="KRXPQJzGiC"><rect fill="#ffffff" width="48" height="48" x="-24" y="-24"></rect><path fill="#000000" clip-rule="nonzero" d=" M-7.77,-10.599 C-7.77,-10.599 -9.19,-9.189 -9.19,-9.189 C-9.19,-9.189 -9.186,-9.192 -9.186,-9.192 C-9.186,-9.192 -7.769,-10.6 -7.769,-10.6 C-7.769,-10.6 -7.77,-10.599 -7.77,-10.599" fill-opacity="1"></path></mask></defs><g clip-path="url(#animationMask_tWu5tR2A2f)"><g mask="url(#KRXPQJzGiC)" transform="matrix(1.35,0,0,1.35,24,24)" opacity="1" style="user-select: none;"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><g opacity="0" transform="matrix(1,0,0,1,0,0)"><path class="fill bkbMM" fill="rgb(95,99,104)" fill-opacity="1" d="M0 0 M-9.19,-9.189 C-9.19,-9.189 -10.61,-7.779 -10.61,-7.779 C-10.61,-7.779 -10.608,-7.78 -10.608,-7.78 C-10.608,-7.78 -9.188,-9.188 -9.188,-9.188 C-9.188,-9.188 -9.19,-9.189 -9.19,-9.189z"></path></g><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path class="fill bkbMM" fill="rgb(95,99,104)" fill-opacity="1" d="M0 0 M4,-2.31 C4,-2.31 4,6 4,6 C4,6 -8,6 -8,6 C-8,6 -8,-6 -8,-6 C-8,-6 4,-6 4,-6 C4,-6 4,-2.31 4,-2.31zM0 0 M6,-1.52 C6,-1.52 6,-6 6,-6 C6,-7.1 5.1,-8 4,-8 C4,-8 -8,-8 -8,-8 C-9.1,-8 -10,-7.1 -10,-6 C-10,-6 -10,6 -10,6 C-10,7.1 -9.1,8 -8,8 C-8,8 4,8 4,8 C5.1,8 6,7.1 6,6 C6,6 6,1.52 6,1.52 C6,1.52 10,5.5 10,5.5 C10,5.5 10,-5.5 10,-5.5 C10,-5.5 6,-1.52 6,-1.52z"></path></g></g></g></g></svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="col-3 control-panle">
-                    <button class="btn btn-primary btn-block" @click="handlerJoin">Join</button>
-                </div>
-            </div>
+        <div id="icons" v-bind:class="[{ 'active' : showTools }]" @mouseover="mouseover">
+            <svg id="mute-audio" xmlns="http://www.w3.org/2000/svg" 
+            v-bind:class="[{ 'on' : mute_audio }]"
+            @click="muteaudio"
+            width="48" height="48" viewBox="-10 -10 68 68">
+            <title>title</title>
+            <circle cx="24" cy="24" r="34">
+                <title>Mute audio</title>
+            </circle>
+            <path class="on" transform="scale(0.6), translate(17,18)" d="M38 22h-3.4c0 1.49-.31 2.87-.87 4.1l2.46 2.46C37.33 26.61 38 24.38 38 22zm-8.03.33c0-.11.03-.22.03-.33V10c0-3.32-2.69-6-6-6s-6 2.68-6 6v.37l11.97 11.96zM8.55 6L6 8.55l12.02 12.02v1.44c0 3.31 2.67 6 5.98 6 .45 0 .88-.06 1.3-.15l3.32 3.32c-1.43.66-3 1.03-4.62 1.03-5.52 0-10.6-4.2-10.6-10.2H10c0 6.83 5.44 12.47 12 13.44V42h4v-6.56c1.81-.27 3.53-.9 5.08-1.81L39.45 42 42 39.46 8.55 6z" fill="white"></path>
+            <path class="off" transform="scale(0.6), translate(17,18)" d="M24 28c3.31 0 5.98-2.69 5.98-6L30 10c0-3.32-2.68-6-6-6-3.31 0-6 2.68-6 6v12c0 3.31 2.69 6 6 6zm10.6-6c0 6-5.07 10.2-10.6 10.2-5.52 0-10.6-4.2-10.6-10.2H10c0 6.83 5.44 12.47 12 13.44V42h4v-6.56c6.56-.97 12-6.61 12-13.44h-3.4z" fill="white"></path>
+            </svg>
+
+            <svg id="mute-video" xmlns="http://www.w3.org/2000/svg" 
+            v-bind:class="[{ 'on' : mute_video}]"
+            @click="mutevideo"
+            width="48" height="48" viewBox="-10 -10 68 68">
+            <circle cx="24" cy="24" r="34">
+                <title>Mute video</title>
+            </circle>
+            <path class="on" transform="scale(0.6), translate(17,16)" d="M40 8H15.64l8 8H28v4.36l1.13 1.13L36 16v12.36l7.97 7.97L44 36V12c0-2.21-1.79-4-4-4zM4.55 2L2 4.55l4.01 4.01C4.81 9.24 4 10.52 4 12v24c0 2.21 1.79 4 4 4h29.45l4 4L44 41.46 4.55 2zM12 16h1.45L28 30.55V32H12V16z" fill="white"></path>
+            <path class="off" transform="scale(0.6), translate(17,16)" d="M40 8H8c-2.21 0-4 1.79-4 4v24c0 2.21 1.79 4 4 4h32c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4zm-4 24l-8-6.4V32H12V16h16v6.4l8-6.4v16z" fill="white"></path>
+            </svg>
+
+            <svg id="hangup" 
+            v-bind:class="[{ 'hidden' : !bothconnected }]" 
+            @click="hangup"
+            xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="-10 -10 68 68">
+            <circle cx="24" cy="24" r="34">
+                <title>Hangup</title>
+            </circle>
+            <path transform="scale(0.7), translate(11,10)" d="M24 18c-3.21 0-6.3.5-9.2 1.44v6.21c0 .79-.46 1.47-1.12 1.8-1.95.98-3.74 2.23-5.33 3.7-.36.35-.85.57-1.4.57-.55 0-1.05-.22-1.41-.59L.59 26.18c-.37-.37-.59-.87-.59-1.42 0-.55.22-1.05.59-1.42C6.68 17.55 14.93 14 24 14s17.32 3.55 23.41 9.34c.37.36.59.87.59 1.42 0 .55-.22 1.05-.59 1.41l-4.95 4.95c-.36.36-.86.59-1.41.59-.54 0-1.04-.22-1.4-.57-1.59-1.47-3.38-2.72-5.33-3.7-.66-.33-1.12-1.01-1.12-1.8v-6.21C30.3 18.5 27.21 18 24 18z" fill="white"></path>
+            </svg>
+
+
+            <svg id="fullscreen" xmlns="http://www.w3.org/2000/svg" 
+             v-bind:class="[{ 'on' : fullscreen}]"
+             @click="setfullscreen"
+            width="48" height="48" viewBox="-10 -10 68 68">
+            <circle cx="24" cy="24" r="34">
+                <title>Enter fullscreen</title>
+            </circle>
+            <path class="on" transform="scale(0.8), translate(7,6)" d="M10 32h6v6h4V28H10v4zm6-16h-6v4h10V10h-4v6zm12 22h4v-6h6v-4H28v10zm4-22v-6h-4v10h10v-4h-6z" fill="white"></path>
+            <path class="off" transform="scale(0.8), translate(7,6)" d="M14 28h-4v10h10v-4h-6v-6zm-4-8h4v-6h6v-4H10v10zm24 14h-6v4h10V28h-4v6zm-6-24v4h6v6h4V10H28z" fill="white"></path>
+            </svg>
+        </div>
+        <div id="confirm-join-div" v-bind:class="[{ 'hidden' : !initiated }]">
+            <div>Ready to join<span></span>?</div>
+            <button class="btn btn-primary btn-block" @click="join">JOIN</button>
         </div>
     </div>
 </template>
@@ -35,33 +71,44 @@ export default {
             peerConnection: null,
             socket: null,
             connectedUser: Date.now(),
-            connected : false
+            showTools: false,
+            initiated: false,
+            mute_audio: false,
+            mute_video: false,
+            fullscreen: false,
+            bothconnected: false
         }
     },
     created() {
 
         let self = this;
-        this.socket = io('https://webrtc-application-poc.herokuapp.com');
+        this.socket = io("https://webrtc-application-poc.herokuapp.com");
 
         this.socket.on('offer', function(data){
+            console.log('offer', data)
             var msg = JSON.parse(data);
             self.handleOffer(msg.offer, '');
         });
 
         this.socket.on('answer', function(data){
+            console.log('answer', data)
             var msg = JSON.parse(data);
             self.handleAnswer(msg.answer); 
         });
 
         this.socket.on('leave', function(data){
+            console.log('leave', data)
             self.handleLeave();
         });
 
         this.socket.on('login', function(data){
+            console.log('login', data)
+            self.initiated = data.initiated;
             self.handlerInitialize();
         });
 
         this.socket.on('candidate', function(data){
+            console.log('candidate', data)
             var msg = JSON.parse(data);
             self.handleCandidate(msg.candidate);
         });
@@ -72,14 +119,80 @@ export default {
         });
     },
     methods: {
+
+        mouseover() {
+            this.showTools = true;
+        },
+
+        mouseleave() {
+            this.showTools = false;
+        },
     
+        join(){
+            this.initiated = false;
+            this.handlerJoin();
+        },
+
+        hangup() {
+            this.sendToServer({
+                type: "leave",
+                userId : localStorage.getItem('session').userId
+            });
+        },
+
+        setfullscreen(){
+            this.fullscreen = !this.fullscreen;
+            if(this.fullscreen)
+                if (document.body.requestFullscreen) {
+                    document.body.requestFullscreen();
+                } else if (document.body.mozRequestFullScreen) {
+                    document.body.mozRequestFullScreen();
+                } else if (document.body.webkitRequestFullscreen) {
+                    document.body.webkitRequestFullscreen();
+                } else if (document.body.msRequestFullscreen) { 
+                    document.body.msRequestFullscreen();
+                }
+            else
+                if (document.body.exitFullscreen) {
+                    document.body.exitFullscreen();
+                } else if (document.body.webkitExitFullscreen) {
+                    document.body.webkitExitFullscreen();
+                } else if (document.body.mozCancelFullScreen) {
+                    document.body.mozCancelFullScreen();
+                } else if (document.body.msExitFullscreen) {
+                    document.body.msExitFullscreen();
+                }
+        },
+
+        muteaudio(){
+            this.mute_audio = !this.mute_audio;
+             if(this.mute_audio){
+                document.getElementById("local_video").srcObject.getTracks()
+                    .forEach(t => t.kind == 'audio' && t.stop());
+            }else{
+                this.handlerInitialize();
+            }
+        },
+
+        mutevideo(){
+            this.mute_video = !this.mute_video
+            if(this.mute_video){
+                document.getElementById("local_video").srcObject.getTracks()
+                    .forEach(t => t.kind == 'video' && t.stop());
+            }else{
+                this.handlerInitialize();
+            }
+        },
+
         handlerInitialize () {
             var mediaConstraints = {
                 audio: true,
                 video: true
             };
 
-            this.createPeerConnection();
+            if(!this.peerConnection){
+                this.createPeerConnection();
+            }
 
             var self = this;
 
@@ -87,15 +200,23 @@ export default {
             .then(function(localStream) {
                 document.getElementById("local_video").srcObject = localStream;
                 localStream.getTracks().forEach(track => self.peerConnection.addTrack(track, localStream));
+
+                if(!self.initiated)
+                    self.handlerJoin();
+
             }).catch((e)=>{
                 alert("Error opening your camera and/or microphone: " + e.message);
                 this.handleLeave();
-            })
+            }); 
         },
         
         handlerJoin() {
             var self = this;
-            this.peerConnection.createOffer().then(function(offer) {
+            this.peerConnection
+            .createOffer({
+                offerToReceiveAudio: 1,
+                offerToReceiveVideo: 1
+            }).then(function(offer) {
                 self.sendToServer({
                     type: "offer",
                     offer
@@ -103,9 +224,7 @@ export default {
                 return self.peerConnection.setLocalDescription(offer);
             })
             .then(function(){
-                document.getElementById('received_video').style.display = 'initial';
-                self.connected = true;
-                // document.getElementById('local_video').style.display = 'none';
+
             })
             .catch((error)=>{
                 console.log(error);
@@ -131,11 +250,13 @@ export default {
         },
 
         handleCandidate(candidate) {
-            this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); 
+            if(this.peerConnection)
+                this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); 
         },
 
         handleLeave() {
-            var remoteVideo = document.getElementById("received_video");
+            var miniVideo = document.getElementById("mini-video");
+            var remoteVideo = document.getElementById("remote-video");
             var localVideo = document.getElementById("local_video");
 
             if (this.peerConnection) {
@@ -148,6 +269,10 @@ export default {
                 this.peerConnection.onicegatheringstatechange = null;
                 this.peerConnection.onnegotiationneeded = null;
 
+                if (miniVideo.srcObject) {
+                    miniVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
+
                 if (remoteVideo.srcObject) {
                     remoteVideo.srcObject.getTracks().forEach(track => track.stop());
                 }
@@ -158,12 +283,17 @@ export default {
 
                 this.peerConnection.close();
                 this.peerConnection = null;
+                
             }
-
+            
+            miniVideo.removeAttribute("src");
+            miniVideo.removeAttribute("srcObject");
             remoteVideo.removeAttribute("src");
             remoteVideo.removeAttribute("srcObject");
             localVideo.removeAttribute("src");
             remoteVideo.removeAttribute("srcObject");
+
+            this.$router.push({path: "/appointment"}) 
         },
 
         sendToServer(msg) {
@@ -180,11 +310,13 @@ export default {
             } 
         },
         handleTrackEvent(event){
-            document.getElementById("received_video").srcObject = event.streams[0];
+            this.bothconnected = true;
+            document.getElementById("remote-video").srcObject = event.streams[0];
         },
 
         handleAnswer(answer){
-            this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer)); 
+            if(this.peerConnection)
+                this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer)); 
         },
 
         handleOffer(offer, name) { 
@@ -231,7 +363,230 @@ export default {
 
 <style>
 
-#received_video {
+    .hidden {
+        display: none;
+    }
+
+    .container{
+        background-color: white;
+    }
+    #icons{
+        bottom: 3vh;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        position: absolute;
+        display: flex;
+    }
+
+
+    #confirm-join-div {
+        position: absolute;
+        top: 50%;
+        z-index: 5;
+        left: 50%;
+        color: white;
+        transform: translate(-50%, -50%);
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .show {
+        display: block !important;
+    }
+
+    #videos {
+        left: 0px;
+        font-size: 0; 
+        height: 100%;
+        pointer-events: none;
+        position: absolute;
+        transition: all 1s;
+        width: 100%;
+    }
+
+    #videos.active {
+        -moz-transform: rotateY(180deg);
+        -ms-transform: rotateY(180deg);
+        -o-transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
+        transform: rotateY(180deg);
+    }
+
+    #local_video{
+        height: 100%;
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: cover;
+        -moz-transform: scale(-1, 1);
+        -ms-transform: scale(-1, 1);
+        -o-transform: scale(-1, 1);
+        -webkit-transform: scale(-1, 1);
+        transform: scale(-1, 1);
+        transition: opacity 1s;
+        width: 100%;
+    }
+
+    #remote-video{
+        left: 0;
+        top: 0;
+        display: block;
+        height: 100%;
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: cover;
+        opacity: 0;
+        position: absolute;
+        -moz-transform: rotateY(180deg);
+        -ms-transform: rotateY(180deg);
+        -o-transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
+        transform: rotateY(180deg);
+        transition: opacity 1s;
+        width: 100%;
+    }
+    #remote-video.active {
+        opacity: 1;
+        z-index: 1;
+    }
+
+    #mini-video {
+        border: 1px solid gray;
+        bottom: 20px;
+        left: 20px;
+        max-height: 17%;
+        max-width: 17%;
+        opacity: 0;
+        position: absolute;
+        transition: opacity 1s;
+        border-radius: 10px;
+    }
+
+    #mini-video.active {
+        opacity: 1;
+        z-index: 2;
+    }
+
+    #mute-audio {
+        transition: 40ms;
+    }
+
+    #mute-video {
+        transition: 120ms;
+    }
+
+    #fullscreen {
+        transition: 280ms;
+    }
+
+    #hangup {
+        transition: 360ms;
+    }
+
+    #icons.active svg {
+        transform: translateX(0);
+    }
+
+    circle {
+        fill: #666;
+        fill-opacity: 0.6;
+    }
+
+    svg.on circle {
+        fill-opacity: 0;
+    }
+
+    path.on {
+        display: none;
+    }
+
+    path.off {
+        display: block;
+    }
+
+    svg.on path.on {
+        display: block;
+    }
+
+    svg.on path.off {
+        display: none;
+    }
+
+
+    svg{
+        border-radius: 48px;
+        box-shadow: 2px 2px 24px #444;
+        display: flex;
+        margin: 0 25px 3vh 0;
+        transform: translateY(calc(200px - 0vw));
+        transition: all .1s;
+        transition-timing-function: ease-in-out;
+    }
+
+    svg:hover {
+        box-shadow: 4px 4px 48px #666;
+    }
+
+
+    #mute-audio:hover,
+    #mute-audio.on {
+        background: #407cf7;
+    }
+
+    #mute-audio:hover circle {
+        fill: #407cf7;
+    }
+
+    #mute-video {
+        transition: 120ms;
+    }
+
+    #mute-video:hover,
+    .on {
+        background: #407cf7;
+    }
+
+    #mute-video:hover circle {
+        fill: #407cf7;
+    }
+
+    #switch-video {
+        transition: 200ms;
+    }
+
+    #switch-video:hover {
+        background: #407cf7;
+    }
+
+    #switch-video:hover circle {
+        fill: #407cf7;
+    }
+
+    #fullscreen {
+        transition: 280ms;
+    }
+
+    #fullscreen:hover,
+    #fullscreen.on {
+        background: #407cf7;
+    }
+
+    #fullscreen:hover circle {
+        fill: #407cf7;
+    }
+
+    #hangup {
+        transition: 360ms;
+    }
+
+    #hangup:hover {
+        background: #dd2c00;
+    }
+    #hangup:hover circle {
+        fill: #dd2c00;
+    }
+/* #received_video {
     display: none;
 }
 
@@ -286,6 +641,6 @@ video{
     z-index: 100;
     left: 26px;
     position: fixed;
-}
+} */
 
 </style>

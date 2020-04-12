@@ -64,9 +64,12 @@ export default {
 
 <style>
   .login-form{
+        top: 40%;
+        position: absolute;
         width:25%;
-        margin: 150px auto;
         padding: 20px;
+        left: 50%;
+        transform: translate(-50%, -50%);
   }
 
   .login-form > form {
