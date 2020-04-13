@@ -2,7 +2,7 @@
 import { authHeader } from '../_helpers';
 
 export const config = {
-    apiUrl : "http://localhost:3000"
+    apiUrl : "https://webrtc-application-poc.herokuapp.com"
 }
 
 export const userService = {
