@@ -1,5 +1,5 @@
 <template>
-    <div class="login-form">
+    <div id="login-form" class="login-form">
         <h2 class="text-center">Login</h2>
         <form @submit.prevent="handleSubmit">
             <div class="form-group">
@@ -63,20 +63,33 @@ export default {
 </script>
 
 <style>
-  .login-form{
-        top: 40%;
-        position: absolute;
-        width:25%;
-        padding: 20px;
-        left: 50%;
-        transform: translate(-50%, -50%);
-  }
+    /* [class*="col-"] {
+        width: 100%;
+    } */
 
-  .login-form > form {
-        margin-bottom: 15px;
-        background: #f7f7f7;
-        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-        padding: 30px;
-        border-radius: 10px;
-  }
+    @media screen and (max-width: 600px) {
+        #login-form {
+            width:90% !important;
+        }
+    }
+    
+    .login-form{
+            top: 40%;
+            position: absolute;
+            width:35%;
+            padding: 20px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+    }
+
+    @media screen and (min-width: 600px) {
+        .login-form > form {
+            margin-bottom: 15px;
+            background: #f7f7f7;
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 10px;
+        }
+    }
+   
 </style>

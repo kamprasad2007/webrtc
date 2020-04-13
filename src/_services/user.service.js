@@ -2,7 +2,7 @@
 import { authHeader } from '../_helpers';
 
 export const config = {
-    apiUrl : "https://webrtc-application-poc.herokuapp.com"
+    apiUrl : "http://localhost:3000"
 }
 
 export const userService = {
@@ -25,7 +25,8 @@ function login(username, password) {
         .then(handleResponse)
         .then(data => {
             if (data) {
-                localStorage.setItem('session', JSON.stringify(data));
+                sessionStorage.setItem('session', JSON.stringify(data));
+                // localStorage.setItem('session', JSON.stringify(data));
             }
 
             return data;
@@ -33,7 +34,8 @@ function login(username, password) {
 }
 
 function logout() {
-    localStorage.removeItem('session');
+    // localStorage.removeItem('session');
+    sessionStorage.removeItem('session');
 }
 
 function getAll() {

@@ -82,40 +82,36 @@ export default {
     created() {
 
         let self = this;
-        this.socket = io("https://webrtc-application-poc.herokuapp.com");
+        this.socket = io('http://localhost:3000');
 
         this.socket.on('offer', function(data){
-            console.log('offer', data)
             var msg = JSON.parse(data);
             self.handleOffer(msg.offer, '');
         });
 
         this.socket.on('answer', function(data){
-            console.log('answer', data)
             var msg = JSON.parse(data);
             self.handleAnswer(msg.answer); 
         });
 
         this.socket.on('leave', function(data){
-            console.log('leave', data)
             self.handleLeave();
         });
 
         this.socket.on('login', function(data){
-            console.log('login', data)
             self.initiated = data.initiated;
             self.handlerInitialize();
         });
 
         this.socket.on('candidate', function(data){
-            console.log('candidate', data)
             var msg = JSON.parse(data);
             self.handleCandidate(msg.candidate);
         });
 
         this.sendToServer({
             type: "login",
-            userId : localStorage.getItem('session').userId
+            // userId : localStorage.getItem('session').userId
+            userId : sessionStorage.getItem('session').userId
         });
     },
     methods: {
@@ -136,7 +132,8 @@ export default {
         hangup() {
             this.sendToServer({
                 type: "leave",
-                userId : localStorage.getItem('session').userId
+                // userId : localStorage.getItem('session').userId
+                userId : sessionStorage.getItem('session').userId
             });
         },
 
