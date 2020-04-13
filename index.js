@@ -27,6 +27,7 @@ app.use(express.static('dist'))
  * Routes Definitions
  */
 
+
 app.post("/login", (req, res) => {
 
     res.send({
@@ -34,6 +35,10 @@ app.post("/login", (req, res) => {
         userId : Date.now(),
         token: 'sdsd-asdas-dasdqwezd21-asd-asdsadasd'
     });
+});
+
+app.get("*", (req, res) => {
+    res.sendFile(__dirname + '/dist/index.html');
 });
 
 /**
