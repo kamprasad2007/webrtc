@@ -1,12 +1,12 @@
 <template>
     <div class="container">
-        <div id="videos" @mouseover="mouseover" @mouseleave="mouseleave" v-bind:class="[{ 'active' : bothconnected }]">
+        <div id="videos" @mouseover="mouseover" v-bind:class="[{ 'active' : bothconnected }]">
             <video id="mini-video" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : bothconnected }]"></video>
             <video id="remote-video" autoplay="" playsinline="" v-bind:class="[{ 'active' : bothconnected }]"></video>
             <video id="local_video" autoplay muted v-bind:class="[{ 'active' : !bothconnected }]"></video>
         </div>
 
-        <div id="icons" v-bind:class="[{ 'active' : showTools }]" @mouseover="mouseover">
+        <div id="icons" v-bind:class="[{ 'active' : showTools }]" @mouseover="mouseover" @mouseleave="mouseleave">
             <svg id="mute-audio" xmlns="http://www.w3.org/2000/svg" 
             v-bind:class="[{ 'on' : mute_audio }]"
             @click="muteaudio"
