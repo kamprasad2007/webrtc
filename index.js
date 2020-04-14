@@ -37,9 +37,15 @@ app.post("/login", (req, res) => {
     });
 });
 
+
+app.get("/session/main.js", (req, res) => {
+    res.sendFile(__dirname + '/dist/main.js');
+});
+
 app.get("*", (req, res) => {
     res.sendFile(__dirname + '/dist/index.html');
 });
+
 
 /**
  * Server Activation

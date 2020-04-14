@@ -22,7 +22,6 @@ router.beforeEach((to, from, next) => {
   const publicPages = ['/login'];
   const authRequired = !publicPages.includes(to.path);
   const loggedIn = sessionStorage.getItem('session');
-  // const loggedIn = localStorage.getItem('session');
 
   if (authRequired && !loggedIn) {
     return next({ 

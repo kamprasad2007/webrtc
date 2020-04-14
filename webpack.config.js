@@ -24,7 +24,13 @@ module.exports = {
         template: './src/index.html'
     })],
     devServer: {
-        historyApiFallback: true
+        historyApiFallback: true,
+        proxy: {
+            '/session/main.js':{
+                target: 'http://localhost:8080',
+                pathRewrite: {'^/session/main.js' : '/main.js'}
+            }
+          }
     },
     externals: {
         // global app config object

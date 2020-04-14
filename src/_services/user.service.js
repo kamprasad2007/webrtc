@@ -26,7 +26,6 @@ function login(username, password) {
         .then(data => {
             if (data) {
                 sessionStorage.setItem('session', JSON.stringify(data));
-                // localStorage.setItem('session', JSON.stringify(data));
             }
 
             return data;
@@ -34,7 +33,6 @@ function login(username, password) {
 }
 
 function logout() {
-    // localStorage.removeItem('session');
     sessionStorage.removeItem('session');
 }
 

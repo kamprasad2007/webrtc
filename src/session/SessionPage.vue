@@ -1,12 +1,12 @@
 <template>
     <div class="container">
-        <div id="videos" @mouseover="mouseover" v-bind:class="[{ 'active' : bothconnected }]">
+        <div id="videos" @mouseover="showTools = true" v-bind:class="[{ 'active' : bothconnected }]">
             <video id="mini-video" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : bothconnected }]"></video>
             <video id="remote-video" autoplay="" playsinline="" v-bind:class="[{ 'active' : bothconnected }]"></video>
             <video id="local_video" autoplay muted v-bind:class="[{ 'active' : !bothconnected }]"></video>
         </div>
 
-        <div id="icons" v-bind:class="[{ 'active' : showTools }]" @mouseover="mouseover" @mouseleave="mouseleave">
+        <div id="icons" v-bind:class="[{ 'active' : showTools }]" @mouseover="showTools = true" @mouseleave="showTools = false">
             <svg id="mute-audio" xmlns="http://www.w3.org/2000/svg" 
             v-bind:class="[{ 'on' : mute_audio }]"
             @click="muteaudio"
@@ -76,7 +76,12 @@ export default {
             mute_audio: false,
             mute_video: false,
             fullscreen: false,
-            bothconnected: false
+            bothconnected: false,
+            localStream: null,
+            mediaConstraints:  {
+                audio: true,
+                video: true
+            }
         }
     },
     created() {
@@ -110,20 +115,10 @@ export default {
 
         this.sendToServer({
             type: "login",
-            // userId : localStorage.getItem('session').userId
             userId : sessionStorage.getItem('session').userId
         });
     },
     methods: {
-
-        mouseover() {
-            this.showTools = true;
-        },
-
-        mouseleave() {
-            this.showTools = false;
-        },
-    
         join(){
             this.initiated = false;
             this.handlerJoin();
@@ -132,7 +127,6 @@ export default {
         hangup() {
             this.sendToServer({
                 type: "leave",
-                // userId : localStorage.getItem('session').userId
                 userId : sessionStorage.getItem('session').userId
             });
         },
@@ -162,30 +156,31 @@ export default {
         },
 
         muteaudio(){
+            let { mute_audio } = this;
             this.mute_audio = !this.mute_audio;
-             if(this.mute_audio){
-                document.getElementById("local_video").srcObject.getTracks()
-                    .forEach(t => t.kind == 'audio' && t.stop());
-            }else{
-                this.handlerInitialize();
-            }
+            let audio_track = this.localStream.getAudioTracks()[0];
+            audio_track.enabled = mute_audio;
+            this.peerConnection.getSenders().find(function(s) {
+                if(s.track === audio_track){
+                    s.track.enabled = mute_audio;
+                }
+            });
         },
 
         mutevideo(){
+            let { mute_video } = this;
             this.mute_video = !this.mute_video
-            if(this.mute_video){
-                document.getElementById("local_video").srcObject.getTracks()
-                    .forEach(t => t.kind == 'video' && t.stop());
-            }else{
-                this.handlerInitialize();
-            }
+            let video_track = this.localStream.getVideoTracks()[0];
+            video_track.enabled = mute_video;
+            this.peerConnection.getSenders().map(function(s) {
+                if(s.track === video_track){
+                    s.track.enabled = mute_video;
+                }
+            });
         },
 
         handlerInitialize () {
-            var mediaConstraints = {
-                audio: true,
-                video: true
-            };
+           
 
             if(!this.peerConnection){
                 this.createPeerConnection();
@@ -193,8 +188,9 @@ export default {
 
             var self = this;
 
-            navigator.mediaDevices.getUserMedia(mediaConstraints)
+            navigator.mediaDevices.getUserMedia(this.mediaConstraints)
             .then(function(localStream) {
+                self.localStream = localStream;
                 document.getElementById("local_video").srcObject = localStream;
                 localStream.getTracks().forEach(track => self.peerConnection.addTrack(track, localStream));
 
@@ -209,8 +205,7 @@ export default {
         
         handlerJoin() {
             var self = this;
-            this.peerConnection
-            .createOffer({
+            this.peerConnection.createOffer({
                 offerToReceiveAudio: 1,
                 offerToReceiveVideo: 1
             }).then(function(offer) {
@@ -221,7 +216,7 @@ export default {
                 return self.peerConnection.setLocalDescription(offer);
             })
             .then(function(){
-
+                console.log("offer done")
             })
             .catch((error)=>{
                 console.log(error);
@@ -244,6 +239,7 @@ export default {
             this.peerConnection.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent;
             this.peerConnection.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent;
             this.peerConnection.onsignalingstatechange = this.handleSignalingStateChangeEvent;
+            this.peerConnection.onremovestream = this.handleRemovestreamEvent;
         },
 
         handleCandidate(candidate) {
@@ -252,6 +248,11 @@ export default {
         },
 
         handleLeave() {
+            let { mute_video } = this;
+            this.peerConnection.getSenders().map(function(s) {
+                s.track.enabled = !mute_video;
+            });
+
             var miniVideo = document.getElementById("mini-video");
             var remoteVideo = document.getElementById("remote-video");
             var localVideo = document.getElementById("local_video");
@@ -280,7 +281,6 @@ export default {
 
                 this.peerConnection.close();
                 this.peerConnection = null;
-                
             }
             
             miniVideo.removeAttribute("src");
@@ -290,7 +290,10 @@ export default {
             localVideo.removeAttribute("src");
             remoteVideo.removeAttribute("srcObject");
 
-            this.$router.push({path: "/appointment"}) 
+            var self = this;
+            setTimeout(function(){
+                self.$router.push({path: "/appointment"}) 
+            },1000)
         },
 
         sendToServer(msg) {
@@ -299,6 +302,7 @@ export default {
         },
 
         handleICECandidateEvent(event){
+            console.log("handleICECandidateEvent")
             if (event.candidate) { 
                 this.sendToServer({ 
                     type: "candidate", 
@@ -306,7 +310,13 @@ export default {
                 }); 
             } 
         },
+
+        handleRemovestreamEvent(event){
+            console.log("handleRemovestreamEvent")
+        },
+
         handleTrackEvent(event){
+            console.log("handleTrackEvent")
             this.bothconnected = true;
             document.getElementById("remote-video").srcObject = event.streams[0];
         },
@@ -339,26 +349,37 @@ export default {
         },
 
         handleRemoveTrackEvent(event){
-
+            console.log("handleRemoveTrackEvent")
         },
         handleICEConnectionStateChangeEvent(event){
-            
+            console.log("handleICEConnectionStateChangeEvent ", event)
+            switch(this.peerConnection.iceConnectionState) {
+                case "closed":
+                case "failed":
+                case "disconnected":
+                    this.handleLeave();
+                break;
+            }
         },
         handleICEGatheringStateChangeEvent(event){
-            
+            console.log("handleICEGatheringStateChangeEvent")
         },
         handleSignalingStateChangeEvent(event) {
-
+            console.log("handleSignalingStateChangeEvent")
         },
 
         handleNegotiationNeededEvent(event) {
-            
+            console.log("handleNegotiationNeededEvent")
         },
     },
 };
 </script>
 
 <style>
+
+    body{
+        overflow: hidden;
+    }
 
     .hidden {
         display: none;
