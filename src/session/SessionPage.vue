@@ -318,7 +318,13 @@ export default {
         handleTrackEvent(event){
             console.log("handleTrackEvent")
             this.bothconnected = true;
-            document.getElementById("remote-video").srcObject = event.streams[0];
+            var miniVideo = document.getElementById("mini-video");
+            var remoteVideo = document.getElementById("remote-video");
+            var localVideo = document.getElementById("local_video");
+
+            localVideo.removeAttribute("srcObject");
+            miniVideo.srcObject = this.localStream;
+            remoteVideo.srcObject = event.streams[0];
         },
 
         handleAnswer(answer){
