@@ -27,7 +27,7 @@ module.exports = {
         historyApiFallback: true,
         proxy: {
             '/session/main.js':{
-                target: 'http://localhost:8081',
+                target: 'http://localhost:8080',
                 pathRewrite: {'^/session/main.js' : '/main.js'}
             }
           }

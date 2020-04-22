@@ -5,7 +5,7 @@
         <form @submit.prevent="handleSubmit">
             <div id="room-id-input-buttons">
                 <div class="form-group">
-                    <input type="text" v-model="appointmentnumber" class="form-control" autofocus="" :class="{ 'is-invalid': submitted && !appointmentnumber }">
+                    <input type="text" v-model="appointmentnumber" placeholder="oew-jbw-iow" class="form-control" autofocus="" :class="{ 'is-invalid': submitted && !appointmentnumber}">
                     <div v-show="submitted && !appointmentnumber" class="invalid-feedback">Appointment number is required</div>
                 </div>
                 <div class="form-group">
@@ -38,6 +38,11 @@ export default {
             if (!(appointmentnumber)) {
                 return;
             }
+            
+            // if (!(appointmentnumber.match("^\\w{3}\\-\\w{3}\\-\\w{3}$"))) {
+            //     this.error = "Invalid Appointment Number !"
+            //     return;
+            // }
 
             this.$router.push(`session/${appointmentnumber}`) 
         }

@@ -50,7 +50,8 @@
 
 
             <svg id="fullscreen" xmlns="http://www.w3.org/2000/svg" 
-             v-bind:class="[{ 'on' : fullscreen}]"
+            v-bind:class="[{ 'on' : fullscreen}]"
+            @click="setfullscreen"
             width="48" height="48" viewBox="-10 -10 68 68">
             <circle cx="24" cy="24" r="34">
                 <title>Enter fullscreen</title>
@@ -63,7 +64,10 @@
             v-bind:class="[{'on': screen_sharing}]"
             @click="sharing"
             width="48" height="48" 
-            viewBox="-10 -10 68 68" focusable="false" class="Hdh4hc cIGbvc NMm5M">
+            viewBox="-10 -10 68 68">
+            <circle cx="24" cy="24" r="34">
+                <title>Screen sharing</title>
+            </circle>
             <path transform="scale(1.3), translate(7,7)"  d="M21 3H3c-1.11 0-2 .89-2 2v14c0 1.11.89 2 2 2h18c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 16.02H3V4.98h18v14.04zM8 12l4-4 4 4-1.41 1.41L13 11.83V16h-2v-4.17l-1.59 1.59L8 12z" fill="white"></path>
             </svg>
         </div>
@@ -124,7 +128,6 @@ export default {
                     
                     this.socket.on('connect', () => {
 
-                        // self.socketId = self.socket.id;
                         self.socket.on('signal', self.gotMessageFromServer);
 
                         self.socket.on('user-left', (id) => {
@@ -153,12 +156,10 @@ export default {
 
                                     self.connections[client_id].onremovestream = (event)=>{
                                         console.log("---> onremovestream")
-                                        // self.gotRemovestream(event, client_id)
                                     }   
                                     
                                     self.connections[client_id].ontrack = (event)=>{
                                         console.log("---> ontrack")
-                                        // self.gotTrack(event, client_id)
                                     } 
                                     
                                     self.connections[client_id].onnegotiationneeded  = (event) => {
@@ -329,6 +330,9 @@ export default {
                         });
                         sender.replaceTrack(newvideo);
                     }
+                }).catch((err) => {
+                    console.log(err);
+                    self.screen_sharing = !self.screen_sharing;
                 });
             }else{
                 let newvideo = this.localStream.getVideoTracks()[0]
@@ -396,7 +400,33 @@ export default {
             setTimeout(function(){
                 self.$router.push({path: "/appointment"}) 
             },1000)
-        }
+        },
+
+        setfullscreen(){
+            this.fullscreen = !this.fullscreen;
+            if(this.fullscreen){
+                if (document.body.requestFullscreen) {
+                    document.body.requestFullscreen();
+                } else if (document.body.mozRequestFullScreen) {
+                    document.body.mozRequestFullScreen();
+                } else if (document.body.webkitRequestFullscreen) {
+                    document.body.webkitRequestFullscreen();
+                } else if (document.body.msRequestFullscreen) { 
+                    document.body.msRequestFullscreen();
+                }
+            }
+            else{
+                if (document.body.exitFullscreen) {
+                    document.body.exitFullscreen();
+                } else if (document.body.webkitExitFullscreen) {
+                    document.body.webkitExitFullscreen();
+                } else if (document.body.mozCancelFullScreen) {
+                    document.body.mozCancelFullScreen();
+                } else if (document.body.msExitFullscreen) {
+                    document.body.msExitFullscreen();
+                }
+            } 
+        },
     }
 };
 </script>
