@@ -1,9 +1,17 @@
 <template>
     <div class="container">
-        <div id="videos" @mouseover="showTools = true" v-bind:class="[{ 'active' : bothconnected }]">
-            <video id="mini-video" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : bothconnected }]"></video>
-            <video id="remote-video" autoplay="" playsinline="" v-bind:class="[{ 'active' : bothconnected }]"></video>
-            <video id="local_video" autoplay muted v-bind:class="[{ 'active' : !bothconnected }]"></video>
+        <div id="videos" @mouseover="showTools = true" v-bind:class="[{ 'active' : videoconnected }]">
+            <div id="mini-videos" class="mini-videos" v-bind:class="[{ 'active' : videoconnected }]">
+               <!-- <video id="mini-video" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : videoconnected }]"></video> -->
+                 <!-- <video id="mini-video2" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : videoconnected }]"></video>
+                 <video id="mini-video3" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : videoconnected }]"></video>
+                 <video id="mini-video4" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : videoconnected }]"></video> --> -->
+                <!-- <video id="mini-video" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : videoconnected }]"></video>
+                <video id="mini-video" autoplay="" playsinline="" muted="" v-bind:class="[{ 'active' : videoconnected }]"></video> -->
+
+            </div>
+            <video id="remote-video" autoplay="" playsinline="" v-bind:class="[{ 'active' : videoconnected }]"></video>
+            <video id="local_video" autoplay  v-bind:class="[{ 'active' : !videoconnected }]"></video>
         </div>
 
         <div id="icons" v-bind:class="[{ 'active' : showTools }]" @mouseover="showTools = true" @mouseleave="showTools = false">
@@ -31,7 +39,7 @@
             </svg>
 
             <svg id="hangup" 
-            v-bind:class="[{ 'hidden' : !bothconnected }]" 
+            v-bind:class="[{ 'hidden' : !videoconnected }]" 
             @click="hangup"
             xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="-10 -10 68 68">
             <circle cx="24" cy="24" r="34">
@@ -43,7 +51,6 @@
 
             <svg id="fullscreen" xmlns="http://www.w3.org/2000/svg" 
              v-bind:class="[{ 'on' : fullscreen}]"
-             @click="setfullscreen"
             width="48" height="48" viewBox="-10 -10 68 68">
             <circle cx="24" cy="24" r="34">
                 <title>Enter fullscreen</title>
@@ -51,11 +58,19 @@
             <path class="on" transform="scale(0.8), translate(7,6)" d="M10 32h6v6h4V28H10v4zm6-16h-6v4h10V10h-4v6zm12 22h4v-6h6v-4H28v10zm4-22v-6h-4v10h10v-4h-6z" fill="white"></path>
             <path class="off" transform="scale(0.8), translate(7,6)" d="M14 28h-4v10h10v-4h-6v-6zm-4-8h4v-6h6v-4H10v10zm24 14h-6v4h10V28h-4v6zm-6-24v4h6v6h4V10H28z" fill="white"></path>
             </svg>
+
+            <svg id="sharing" xmlns="http://www.w3.org/2000/svg"  
+            v-bind:class="[{'on': screen_sharing}]"
+            @click="sharing"
+            width="48" height="48" 
+            viewBox="-10 -10 68 68" focusable="false" class="Hdh4hc cIGbvc NMm5M">
+            <path transform="scale(1.3), translate(7,7)"  d="M21 3H3c-1.11 0-2 .89-2 2v14c0 1.11.89 2 2 2h18c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 16.02H3V4.98h18v14.04zM8 12l4-4 4 4-1.41 1.41L13 11.83V16h-2v-4.17l-1.59 1.59L8 12z" fill="white"></path>
+            </svg>
         </div>
-        <div id="confirm-join-div" v-bind:class="[{ 'hidden' : !initiated }]">
+        <!-- <div id="confirm-join-div" >
             <div>Ready to join<span></span>?</div>
             <button class="btn btn-primary btn-block" @click="join">JOIN</button>
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -68,103 +83,204 @@ import { userService } from '../_services';
 export default {
     data () {
         return {
-            peerConnection: null,
+            connections : [],
             socket: null,
-            connectedUser: Date.now(),
             showTools: false,
-            initiated: false,
             mute_audio: false,
             mute_video: false,
+            screen_sharing: false,
             fullscreen: false,
-            bothconnected: false,
             localStream: null,
-            mediaConstraints:  {
-                audio: true,
-                video: true
-            }
+            screenStream: null,
+            videoconnected: false,
+            usermedia_ready: false,
         }
     },
     created() {
 
-        let self = this;
-        this.socket = io('https://webrtc-application-poc.herokuapp.com');
-
-        this.socket.on('offer', function(data){
-            var msg = JSON.parse(data);
-            self.handleOffer(msg.offer, '');
-        });
-
-        this.socket.on('answer', function(data){
-            var msg = JSON.parse(data);
-            self.handleAnswer(msg.answer); 
-        });
-
-        this.socket.on('leave', function(data){
-            self.handleLeave();
-        });
-
-        this.socket.on('login', function(data){
-            self.initiated = data.initiated;
-            self.handlerInitialize();
-        });
-
-        this.socket.on('candidate', function(data){
-            var msg = JSON.parse(data);
-            self.handleCandidate(msg.candidate);
-        });
-
-        this.sendToServer({
-            type: "login",
-            userId : sessionStorage.getItem('session').userId
-        });
+        this.connections.length = 0;
+        this.initialize();
     },
     methods: {
-        join(){
-            this.initiated = false;
-            this.handlerJoin();
+
+        initialize(){
+            let peerConnectionConfig = {
+                'iceServers': [
+                    {'urls': 'stun:stun.l.google.com:19302'},
+                ]
+            };
+            let offerConfig = {
+                    offerToReceiveAudio: 1,
+                    offerToReceiveVideo: 1
+                };
+
+            let self  = this;
+            if(navigator.mediaDevices.getUserMedia) {
+                this.startVideoCapture()
+                .then(self.getUserMediaSuccess)
+                .then(()=>{
+
+                    this.socket = io.connect("https://webrtc-application-poc.herokuapp.com"); 
+                    
+                    this.socket.on('connect', () => {
+
+                        // self.socketId = self.socket.id;
+                        self.socket.on('signal', self.gotMessageFromServer);
+
+                        self.socket.on('user-left', (id) => {
+                            //self.disconnect();
+                        });
+
+                        self.socket.on('user-joined', (id, count, clients) => {
+                            console.log("user-joined ", Object.keys(self.connections))
+                            clients.forEach(client_id => {
+                        
+                                if( client_id != self.socket.id && !self.connections[client_id]){
+                                    let PeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection
+                                    self.connections[client_id] = new PeerConnection(peerConnectionConfig);
+                                    
+                                    self.connections[client_id].onicecandidate = (event) => {
+                                        if(event.candidate != null) {
+                                            console.log("---> candidate " ,client_id);
+                                            self.socket.emit('signal', client_id, JSON.stringify({'ice': event.candidate}));
+                                        }
+                                    }
+
+                                    self.connections[client_id].onaddstream = (event)=>{
+                                        console.log("---> onaddstream")
+                                        self.gotRemoteStream(event, client_id)
+                                    } 
+
+                                    self.connections[client_id].onremovestream = (event)=>{
+                                        console.log("---> onremovestream")
+                                        // self.gotRemovestream(event, client_id)
+                                    }   
+                                    
+                                    self.connections[client_id].ontrack = (event)=>{
+                                        console.log("---> ontrack")
+                                        // self.gotTrack(event, client_id)
+                                    } 
+                                    
+                                    self.connections[client_id].onnegotiationneeded  = (event) => {
+                                        console.log("---> onnegotiationneeded");
+                                        for(let key in self.connections){
+                                            self.connections[key].createOffer(offerConfig).then((description) => {
+                                                self.connections[key].setLocalDescription(description).then(() => {
+                                                    self.socket.emit('signal', key, JSON.stringify({'sdp': self.connections[key].localDescription}));
+                                                }).catch(e => console.log(e));        
+                                            });
+                                        }
+                                    }
+
+                                    self.localStream.getTracks().forEach(track => self.connections[client_id].addTrack(track, self.localStream));
+                                    // self.connections[client_id].addStream(self.localStream);
+                                    console.log("user connection created");
+                                }
+                            });
+
+                            self.videoconnected = count >= 2;
+
+                            if(count >= 2){
+                                for(let key in self.connections){
+                                    self.connections[key].createOffer(offerConfig).then((description) => {
+                                        self.connections[key].setLocalDescription(description).then(() => {
+                                            self.socket.emit('signal', key, JSON.stringify({'sdp': self.connections[key].localDescription}));
+                                        }).catch(e => console.log(e));        
+                                    });
+                                }
+                            }
+                        });
+                    })
+                })
+            }
         },
 
-        hangup() {
-            this.sendToServer({
-                type: "leave",
-                userId : sessionStorage.getItem('session').userId
-            });
+        getUserMediaSuccess(stream) {
+            console.log("set local stream sucessful")
+            this.localStream = stream;
+            document.getElementById('local_video').srcObject = stream;
         },
 
-        setfullscreen(){
-            this.fullscreen = !this.fullscreen;
-            if(this.fullscreen)
-                if (document.body.requestFullscreen) {
-                    document.body.requestFullscreen();
-                } else if (document.body.mozRequestFullScreen) {
-                    document.body.mozRequestFullScreen();
-                } else if (document.body.webkitRequestFullscreen) {
-                    document.body.webkitRequestFullscreen();
-                } else if (document.body.msRequestFullscreen) { 
-                    document.body.msRequestFullscreen();
+        gotRemoteStream(event, id) {
+            console.log("---> gotRemoteStream");
+
+            var localVideo = document.getElementById("local_video");
+            var remoteVideo = document.getElementById("remote-video");
+            let div =  document.getElementById("mini-videos"); 
+            let video  = document.createElement('video');
+            video.setAttribute('data-id', id);
+            video.autoplay    = true; 
+            video.muted       = true;
+            video.playsinline = true;
+            video.classList = 'mini-video active';
+            div.appendChild(video); 
+
+            let mini_elements = document.getElementById("mini-videos").querySelectorAll('video');
+            if(mini_elements.length == 1){
+                
+                if ('srcObject' in video) {
+                        document.getElementById("local_video").removeAttribute("srcObject");
+                        document.getElementById("local_video").srcObject= null;
+                    
+                    setTimeout(() => {
+                        video.srcObject = this.localStream;
+                        video.load();
+                    }, 100);
+
+                    setTimeout(() => {
+                        document.getElementById("remote-video").srcObject = this.connections[id].getRemoteStreams()[0];
+                        document.getElementById("remote-video").load();
+                    }, 500);
+                }else{
+                    setTimeout(() => {
+                        localVideo.removeAttribute("src");
+                        localVideo.src = null;
+                    }, 500);
+
+                    setTimeout(() => {
+                        video.src = this.localStream;
+                        video.load();
+                    }, 100);
+
+                    setTimeout(() => {
+                       
+                        remoteVideo.src = event.stream;
+                        remoteVideo.load();
+                    }, 500);
                 }
-            else
-                if (document.body.exitFullscreen) {
-                    document.body.exitFullscreen();
-                } else if (document.body.webkitExitFullscreen) {
-                    document.body.webkitExitFullscreen();
-                } else if (document.body.mozCancelFullScreen) {
-                    document.body.mozCancelFullScreen();
-                } else if (document.body.msExitFullscreen) {
-                    document.body.msExitFullscreen();
+            }else{
+                if ('srcObject' in video) {
+                    video.srcObject = event.stream;
+                }else{
+                    video.src = event.stream;
                 }
+            }
         },
 
-        muteaudio(){
-            let { mute_audio } = this;
-            this.mute_audio = !this.mute_audio;
-            let audio_track = this.localStream.getAudioTracks()[0];
-            audio_track.enabled = mute_audio;
-            this.peerConnection.getSenders().find(function(s) {
-                if(s.track === audio_track){
-                    s.track.enabled = mute_audio;
+        gotMessageFromServer(fromId, message) {
+            console.log("---> gotMessageFromServer")
+            console.log(this.connections)
+            var signal = JSON.parse(message)
+
+            if(fromId != this.socket.id) {
+                if(signal.sdp){
+                    let SessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
+                    this.connections[fromId].setRemoteDescription(new SessionDescription(signal.sdp)).then(() => {                
+                        if(signal.sdp.type == 'offer') {
+                            this.connections[fromId].createAnswer().then((description) => {
+                                this.connections[fromId].setLocalDescription(description).then(() => {
+                                    this.socket.emit('signal', fromId, JSON.stringify({'sdp': this.connections[fromId].localDescription}));
+                                }).catch(e => console.log(e));        
+                            }).catch(e => console.log(e));
+                        }
+                    }).catch(e => console.log(e));
                 }
-            });
+            
+                if(signal.ice) {
+                    let IceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+                    this.connections[fromId].addIceCandidate(new IceCandidate(signal.ice)).catch(e => console.log(e));
+                }                
+            }
         },
 
         mutevideo(){
@@ -172,212 +288,116 @@ export default {
             this.mute_video = !this.mute_video
             let video_track = this.localStream.getVideoTracks()[0];
             video_track.enabled = mute_video;
-            this.peerConnection.getSenders().map(function(s) {
-                if(s.track === video_track){
-                    s.track.enabled = mute_video;
-                }
-            });
-        },
-
-        handlerInitialize () {
-           
-
-            if(!this.peerConnection){
-                this.createPeerConnection();
-            }
-
-            var self = this;
-
-            navigator.mediaDevices.getUserMedia(this.mediaConstraints)
-            .then(function(localStream) {
-                self.localStream = localStream;
-                document.getElementById("local_video").srcObject = localStream;
-                localStream.getTracks().forEach(track => self.peerConnection.addTrack(track, localStream));
-
-                if(!self.initiated)
-                    self.handlerJoin();
-
-            }).catch((e)=>{
-                alert("Error opening your camera and/or microphone: " + e.message);
-                this.handleLeave();
-            }); 
-        },
-        
-        handlerJoin() {
-            var self = this;
-            this.peerConnection.createOffer({
-                offerToReceiveAudio: 1,
-                offerToReceiveVideo: 1
-            }).then(function(offer) {
-                self.sendToServer({
-                    type: "offer",
-                    offer
-                });
-                return self.peerConnection.setLocalDescription(offer);
-            })
-            .then(function(){
-                console.log("offer done")
-            })
-            .catch((error)=>{
-                console.log(error);
-            });
-        },
-
-        createPeerConnection () {
-            this.peerConnection = new RTCPeerConnection({
-                iceServers: [
-                    {
-                        urls: "stun:stun.l.google.com:19302"
+            for(let key in this.connections){
+                this.connections[key].getSenders().forEach(function(s) {
+                    if(s.track === video_track){
+                        s.track.enabled = mute_video;
                     }
-                ]
-            });
-
-            this.peerConnection.onicecandidate = this.handleICECandidateEvent;
-            this.peerConnection.ontrack = this.handleTrackEvent;
-            this.peerConnection.onnegotiationneeded = this.handleNegotiationNeededEvent;
-            this.peerConnection.onremovetrack = this.handleRemoveTrackEvent;
-            this.peerConnection.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent;
-            this.peerConnection.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent;
-            this.peerConnection.onsignalingstatechange = this.handleSignalingStateChangeEvent;
-            this.peerConnection.onremovestream = this.handleRemovestreamEvent;
+                })
+            }
         },
 
-        handleCandidate(candidate) {
-            if(this.peerConnection)
-                this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); 
+        muteaudio(){
+            let { mute_audio } = this;
+            this.mute_audio = !this.mute_audio;
+            let audio_track = this.localStream.getAudioTracks()[0];
+            audio_track.enabled = mute_audio;
+            for(let key in this.connections){
+                this.connections[key].getSenders().forEach(function(s) {
+                    if(s.track === audio_track){
+                        s.track.enabled = mute_audio;
+                    }
+                })
+            }
         },
 
-        handleLeave() {
-            let { mute_video } = this;
-            this.peerConnection.getSenders().map(function(s) {
-                s.track.enabled = !mute_video;
-            });
+        hangup(){
+            this.socket.close();
+            this.disconnect();
+        },
 
-            var miniVideo = document.getElementById("mini-video");
-            var remoteVideo = document.getElementById("remote-video");
-            var localVideo = document.getElementById("local_video");
-
-            if (this.peerConnection) {
-                this.peerConnection.ontrack = null;
-                this.peerConnection.onremovetrack = null;
-                this.peerConnection.onremovestream = null;
-                this.peerConnection.onicecandidate = null;
-                this.peerConnection.oniceconnectionstatechange = null;
-                this.peerConnection.onsignalingstatechange = null;
-                this.peerConnection.onicegatheringstatechange = null;
-                this.peerConnection.onnegotiationneeded = null;
-
-                if (miniVideo.srcObject) {
-                    miniVideo.srcObject.getTracks().forEach(track => track.stop());
+        sharing(){
+            let self = this;
+            this.screen_sharing = !this.screen_sharing;
+            if(this.screen_sharing){
+                this.startScreenCapture().then((stream) => {
+                    // self.screenStream = stream;
+                    let newvideo = stream.getVideoTracks()[0]
+                    for(let key in self.connections){
+                        let  sender = self.connections[key].getSenders().find((s) => {
+                            return s.track.kind == newvideo.kind
+                        });
+                        sender.replaceTrack(newvideo);
+                    }
+                });
+            }else{
+                let newvideo = this.localStream.getVideoTracks()[0]
+                for(let key in self.connections){
+                    let  sender = self.connections[key].getSenders().find((s) => {
+                        return s.track.kind == newvideo.kind
+                    });
+                    sender.replaceTrack(newvideo);
                 }
+            }
+        },
 
-                if (remoteVideo.srcObject) {
-                    remoteVideo.srcObject.getTracks().forEach(track => track.stop());
-                }
+        startScreenCapture() {
+            if (navigator.getDisplayMedia) {
+                return navigator.getDisplayMedia({video: true, audio: true});
+            } else if (navigator.mediaDevices.getDisplayMedia) {
+                return navigator.mediaDevices.getDisplayMedia({video: true, audio: true});
+            } else {
+                return navigator.mediaDevices.getUserMedia({video: {mediaSource: 'screen'}, audio: true});
+            }
+        },
 
-                if (localVideo.srcObject) {
-                    localVideo.srcObject.getTracks().forEach(track => track.stop());
-                }
+        startVideoCapture(){
+            let constraints = {
+                video: true,
+                audio: true,
+            };
+            return navigator.mediaDevices.getUserMedia(constraints);
+        },
 
-                this.peerConnection.close();
-                this.peerConnection = null;
+        disconnect(){
+            let self = this;
+            let miniVideos = document.getElementById("mini-videos").querySelectorAll('video');
+            let remoteVideo = document.getElementById("remote-video");
+            let localVideo = document.getElementById("local_video");
+
+            this.localStream.getTracks().forEach(track => track.stop());
+
+            if(miniVideos.length > 0){
+                miniVideos.forEach(miniVideo=>{
+                    if (miniVideo.srcObject) {
+                        miniVideo.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                    miniVideo.removeAttribute("srcObject");
+                    miniVideo.srcObject = null;
+                });
             }
             
-            miniVideo.removeAttribute("src");
-            miniVideo.removeAttribute("srcObject");
-            remoteVideo.removeAttribute("src");
+            if (remoteVideo.srcObject) {
+                remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+                remoteVideo.srcObject = null;
+            }
+            if (localVideo.srcObject) {
+                localVideo.srcObject.getTracks().forEach(track => track.stop());
+                localVideo.srcObject = null;
+            }
+
+            for(let key in self.connections){
+                self.connections[key].close();
+            }
+
             remoteVideo.removeAttribute("srcObject");
-            localVideo.removeAttribute("src");
             remoteVideo.removeAttribute("srcObject");
 
-            var self = this;
             setTimeout(function(){
                 self.$router.push({path: "/appointment"}) 
             },1000)
-        },
-
-        sendToServer(msg) {
-            msg['userId'] = this.connectedUser;
-            this.socket.emit(msg.type, JSON.stringify(msg));
-        },
-
-        handleICECandidateEvent(event){
-            console.log("handleICECandidateEvent")
-            if (event.candidate) { 
-                this.sendToServer({ 
-                    type: "candidate", 
-                    candidate: event.candidate 
-                }); 
-            } 
-        },
-
-        handleRemovestreamEvent(event){
-            console.log("handleRemovestreamEvent")
-        },
-
-        handleTrackEvent(event){
-            console.log("handleTrackEvent")
-            this.bothconnected = true;
-            var miniVideo = document.getElementById("mini-video");
-            var remoteVideo = document.getElementById("remote-video");
-            var localVideo = document.getElementById("local_video");
-
-            localVideo.removeAttribute("srcObject");
-            miniVideo.srcObject = this.localStream;
-            remoteVideo.srcObject = event.streams[0];
-        },
-
-        handleAnswer(answer){
-            if(this.peerConnection)
-                this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer)); 
-        },
-
-        handleOffer(offer, name) { 
-            var self = this;
-            var desc = new RTCSessionDescription(offer)
-            this.peerConnection.setRemoteDescription(desc)
-            .then(function(){
-                return self.peerConnection.createAnswer();
-            })
-            .then(function(answer){
-                self.sendToServer({ 
-                    type: "answer", 
-                    answer: answer 
-                });
-                return self.peerConnection.setLocalDescription(answer);
-            })
-            .then(function(answer) {
-                console.log("done")
-            })
-            .catch((error)=>{
-                console.log(error);
-            });
-        },
-
-        handleRemoveTrackEvent(event){
-            console.log("handleRemoveTrackEvent")
-        },
-        handleICEConnectionStateChangeEvent(event){
-            console.log("handleICEConnectionStateChangeEvent ", event)
-            switch(this.peerConnection.iceConnectionState) {
-                case "closed":
-                case "failed":
-                case "disconnected":
-                    this.handleLeave();
-                break;
-            }
-        },
-        handleICEGatheringStateChangeEvent(event){
-            console.log("handleICEGatheringStateChangeEvent")
-        },
-        handleSignalingStateChangeEvent(event) {
-            console.log("handleSignalingStateChangeEvent")
-        },
-
-        handleNegotiationNeededEvent(event) {
-            console.log("handleNegotiationNeededEvent")
-        },
-    },
+        }
+    }
 };
 </script>
 
@@ -394,6 +414,19 @@ export default {
     .container{
         background-color: white;
     }
+
+    .mini-videos{
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 5%;
+        left: 2%;
+        width: 100%;
+        height: 90%;
+        max-width: 15%;
+        z-index: 15;
+    }
+
     #icons{
         bottom: 3vh;
         left: 50%;
@@ -438,6 +471,7 @@ export default {
         transform: rotateY(180deg);
     }
 
+    
     #local_video{
         height: 100%;
         max-height: 100%;
@@ -472,22 +506,32 @@ export default {
     }
     #remote-video.active {
         opacity: 1;
-        z-index: 1;
+        z-index: 5;
     }
 
-    #mini-video {
-        border: 1px solid gray;
+    /* .mini-video-container {
         bottom: 20px;
-        left: 20px;
-        max-height: 17%;
-        max-width: 17%;
-        opacity: 0;
         position: absolute;
+        max-height: 17%;
+        width: 100%;
+        border: 1px solid gray;
+        height: 17%;
+    } */
+
+    .mini-video {
+        border: 1px solid gray;
+        /* bottom: 20px; */
+        height: 20%;
+        width: 100%;
+        opacity: 0;
+        /* position: absolute; */
         transition: opacity 1s;
         border-radius: 10px;
+        object-fit: cover;
+        margin-bottom: 5px;
     }
 
-    #mini-video.active {
+    .mini-video.active {
         opacity: 1;
         z-index: 2;
     }
@@ -609,6 +653,10 @@ export default {
     }
     #hangup:hover circle {
         fill: #dd2c00;
+    }
+
+    #sharing:hover{
+        background: #407cf7;
     }
 /* #received_video {
     display: none;
